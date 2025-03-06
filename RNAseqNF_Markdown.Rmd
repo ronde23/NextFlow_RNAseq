@@ -1,0 +1,151 @@
+---
+title: <h1> <img src="childrens_logo.png"
+  width="195"
+  height="75"
+  style="float:left;">
+output: html_document
+---
+## 
+<font size="6">
+<font face="Times New Roman">
+**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BCS Report: RNA-Seq Analysis**  
+<font size="4.5">
+<font face="Times New Roman">
+<span style="color:blue">
+<div align="center">
+Bioinformatics Collaborative Services - Cincinnati Children's Hospital
+</div>
+</font>
+</font>
+</font>
+</font>
+
+
+#
+```{r set-up, echo=FALSE, warning=FALSE}
+#library("rmarkdown")
+#library("pandoc")
+#library("knitr")
+# Rscript -e "rmarkdown::render('RNAseqNF_Markdown.Rmd', 'html_document')"
+```
+
+###
+<br />
+<div align="left">
+<font size="5.5">
+<font face="Times New Roman">
+**Inputs:**
+</font>
+</font>
+</div>
+
+
+<font size="4.5">
+<font face="Times New Roman">
+<div align="left">
+```{r eval=TRUE, echo=FALSE, warning=FALSE, results="asis"}
+infiles = Sys.glob("salmon.merged.gene_*.tsv")
+gmt_file = 
+for (f in infiles) {
+	if (grepl('gene_counts.tsv',f) == TRUE) {cat(paste0('Raw feature count file: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', "[", f, "](",f,")")); cat(paste(" ","\n"));}
+	if (grepl('gene_tpm.tsv',f) == TRUE) {cat(paste0('Normalized feature count file: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', "[", f, "](",f,")")); cat(paste(" ","\n"));}
+}
+```
+</div>
+</font>
+</font>
+
+
+<font face="Times New Roman">
+<br />
+<font size="5.5">**Results:**</font>  
+<font size="4.5">**1. Principal Component Analysis Plot:**</font>  
+<font size="4.5">Top 500 most variable genes are used to capture variances across the gene expression profiles of the samples. Samples having similar expression profiles are grouped together in this plot.</font>  
+</font>
+<center>
+```{r eval=TRUE, echo = FALSE, results="asis", message=FALSE}
+img = Sys.glob("PCA*.png")
+cat(paste0("![](",img[1],"){width=70%}"))
+```
+</center>
+
+
+<font face="Times New Roman">
+<br />
+<font size="4.5">**2. Volcano Plot and Heatmap:**</font>  
+<font size="4.5">Volcano plot enables quick visual identification of genes with statistically significant fold-changes. In this plot, the most upregulated genes are towards the right, the most downregulated genes are towards the left, and the most statistically significant genes are towards the top. Heatmap illustrates the normalized expression levels of the differentially expressing genes (DEGs). In this plot, samples are clustered based on their expression profiles.</font>  
+<br />
+</font>
+<center>
+```{r eval=TRUE, echo = FALSE, results="asis", message=FALSE}
+volcimg = Sys.glob("*VolcanoPlot*.png")
+hmimg = Sys.glob("*Heatmap*.png")
+for (i in 1:length(volcimg)){
+	cat(paste0("![](",volcimg[i],"){width=65%}"), "\n"); cat(paste(" ","\n"));
+	cat(paste0("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", "![](",hmimg[i],"){width=65%}"), "\n"); cat(paste(" ","\n\n\n\n"));
+}
+```
+</center>
+</font>
+</font>
+
+
+<font face="Times New Roman">
+<br />
+<font size="4.5"><span style="color:black">**3. Gene Set Enrichment Analysis**</span>:  
+<font size="4.5">This analysis helps to identify different categories of genes that are over-represented or under-represented in a large set of genes to understand the biological processes associated with such changes in the gene expression levels.<font size="4.5">  
+```{r eval=TRUE, echo = FALSE, results="asis", message=FALSE}
+library("stringr")
+input_paramaters = Sys.glob("*.yaml"); #print(input_paramaters[1]);
+lines = readLines(input_paramaters[1], warn=FALSE); #print(lines);
+gsea_htmls = Sys.glob("*/*/index.html"); #print(gsea_htmls);
+for (i in 1:length(gsea_htmls)) {
+	gseaf = strsplit(gsea_htmls[i], "/"); #print(gseaf);
+	fname = strsplit(gsea_htmls[i], ".dsq"); #print(fname);
+	dirname = gsub("/", "", fname[[1]][2]); #print(gseaf[[1]][1]); #print(fname[[1]][2]); #print(dirname); #print(gseaf[1]); 
+	if (grepl('p1',gseaf[[1]][1]) == TRUE) {
+		#print(gseaf[[1]][1])
+		for (line in lines) {
+			if ((grepl('p1gmtfile',line) == TRUE) & (grepl('NA',line) == FALSE)) {
+				line_chomp = gsub("'", "", line); line_chomp = gsub('"', "", line); 
+				#gmt_file = paste0(gsub("p1gmtfile: /data/BCS/Databank/GMT_files/", "", line_chomp)); #print(gmt_file);
+				gmtf = strsplit(line_chomp, "downstream_expression/")[[1]][2]
+				#print(gmtf)
+				#cat(paste0("[",gmtf," ",dirname," GSEA Results and links](",gsea_htmls[i],")"), " \n")
+				cat(paste0("[",gmtf," GSEA Results and links](",gsea_htmls[i],")"), " \n")
+			}
+		}
+	}
+	if (grepl('p2',gseaf[[1]][1]) == TRUE) {
+		for (line in lines) {
+			if ((grepl('p2gmtfile',line) == TRUE) & (grepl('NA',line) == FALSE)) {
+				line_chomp = gsub("'", "", line); line_chomp = gsub('"', "", line); #cat(paste0(line_chomp))
+				#gmt_file = paste0(gsub("p2gmtfile: /data/BCS/Databank/GMT_files/", "", line_chomp)); #print(gmt_file);
+				gmtf = strsplit(line_chomp, "downstream_expression/")[[1]][2]
+				#print(gmtf)
+				#cat(paste0("[",gmtf," ",dirname, " GSEA Results and links](",gsea_htmls[i],")"), " \n")
+				cat(paste0("[",gmtf," GSEA Results and links](",gsea_htmls[i],")"), " \n")
+			}
+		}
+	}
+	if (grepl('p3',gseaf[[1]][1]) == TRUE) {
+		for (line in lines) {
+			if ((grepl('p3gmtfile',line) == TRUE) & (grepl('NA',line) == FALSE)) {
+				line_chomp = gsub("'", "", line); line_chomp = gsub('"', "", line); #cat(paste0(line_chomp))
+				#gmt_file = paste0(gsub("p3gmtfile: /data/BCS/Databank/GMT_files/", "", line_chomp)); #print(gmt_file);
+				gmtf = strsplit(line_chomp, "downstream_expression/")[[1]][2]
+				#print(gmtf)
+				#cat(paste0("[",gmtf," ",dirname, " GSEA Results and links](",gsea_htmls[i],")"), " \n")
+				cat(paste0("[",gmtf," GSEA Results and links](",gsea_htmls[i],")"), " \n")
+			}
+		}
+	}	
+}
+
+```
+</font>
+<br />
+</font>
+
+
+
